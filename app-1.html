@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/app-1.css">
+    <script src="./js/vue.js"></script>
+    <script src="./js/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="weather">
+        <div id="serch">
+            <input type="text" @keyup.enter="getWeather" v-model="city">
+            <button @click="getWeather">查询天气</button>
+        </div>
+        <div class="cityKey">
+            <a @click="changeCity('武汉')">武汉</a>
+            <a @click="changeCity('北京')">北京</a>
+            <a @click="changeCity('深圳')">深圳</a>
+            <a @click="changeCity('上海')">上海</a>
+        </div>
+        <div id="content">
+            <div class="error" v-if="desc!='start'&&desc!='OK'">{{'未能查询到"'+serchcity+'"城市相关天气信息'}}</div>
+            <div class="success" v-if="desc=='OK'">
+                <div class="city">{{serchcity+'天气'}}</div>
+                <div class="item" v-for="data in forecast">
+                    <div class="date">{{data.date}}</div>
+                    <div class="temperature">
+                        {{data.low + ' ~ ' + data.high}}
+                    </div>
+                    <div class="type">
+                        {{data.type}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weather = new Vue({
+            el: "#weather",
+            data: {
+                forecast: [],
+                city: '',
+                serchcity: '',
+                desc: "start"
+            },
+            methods: {
+                getWeather: function (check) {
+                    this.serchcity = typeof check != 'object' ? check : this.city;
+                    this.city = '';
+                    axios.get(`http://wthrcdn.etouch.cn/weather_mini?city=${this.serchcity}`).then((
+                        res) => {
+                        this.desc = res.data.desc;
+                        if (this.desc == "invilad-citykey") return;
+                        this.forecast = res.data.data.forecast;
+                    }, (err) => console.log(err));
+                },
+                changeCity: function (city) {
+                    this.getWeather(city);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
